@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Torann</RootNamespace>
+    <PackageId>Torann</PackageId>
+    <Version>0.1.0</Version>
+    <Description>Torann (Irish: noise) — a pure managed C# implementation of the Noise Protocol Framework. No libsodium, no native binaries; runs on iOS, Android, and everywhere else .NET does. Verified against the cacophony reference test vectors.</Description>
+    <Authors>Stony Grey LLC</Authors>
+    <Copyright>© 2026 Stony Grey LLC</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageTags>noise-protocol;cryptography;encryption;handshake;x25519;curve25519;chacha20-poly1305;aes-gcm;e2e-encryption;maui;ios;android;ble</PackageTags>
+    <PackageProjectUrl>https://github.com/stonygrey/torann</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/stonygrey/torann</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
+    <InternalsVisibleTo Include="Torann.Tests" />
+  </ItemGroup>
+
+</Project>

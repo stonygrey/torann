@@ -1,0 +1,27 @@
+#!/bin/bash
+# Copyright © 2026 Stony Grey LLC.
+# SPDX-License-Identifier: MIT
+# Packs Torann and pushes the nupkg to nuget.org.
+#
+# Usage: lib/publish-nuget
+#
+# Requires NUGET_API_KEY (create at https://www.nuget.org/account/apikeys
+# with Push new packages and package versions). The key is read from the
+# environment only — never commit it.
+#
+# Optional: NUGET_SOURCE  (default https://api.nuget.org/v3/index.json)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+if [[ -z "${NUGET_API_KEY:-}" ]]; then
+  echo "NUGET_API_KEY is not set. Create a key at https://www.nuget.org/account/apikeys" >&2
+  exit 1
+fi
+
+"$(dirname "$0")/pack-nuget"
+
+SOURCE="${NUGET_SOURCE:-https://api.nuget.org/v3/index.json}"
+nupkg="$(ls -1 artifacts/Torann.*.nupkg | grep -v '\.symbols\.' | sort | tail -n 1)"
+
+dotnet nuget push "$nupkg" --api-key "$NUGET_API_KEY" --source "$SOURCE"
+echo "published: $nupkg → $SOURCE"
