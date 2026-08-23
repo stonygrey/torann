@@ -28,6 +28,7 @@ public sealed class KeyPair : IDisposable
         }
     }
 
+    /// <summary>Public key bytes. The array is owned by this instance; do not mutate it.</summary>
     public byte[] PublicKey
     {
         get
@@ -37,6 +38,7 @@ public sealed class KeyPair : IDisposable
         }
     }
 
+    /// <summary>Zeros the private key. Accessing either key afterwards throws <see cref="ObjectDisposedException"/>.</summary>
     public void Dispose()
     {
         if (_disposed)

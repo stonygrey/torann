@@ -122,6 +122,12 @@ public sealed class HandshakeState : IDisposable
         }
     }
 
+    /// <summary>Writes the next handshake message (Noise §5.3 WriteMessage).</summary>
+    /// <param name="payload">Optional application payload; encrypted once the handshake has derived a key.</param>
+    /// <param name="messageBuffer">Receives the message. Must hold the pattern's key material plus payload and tag.</param>
+    /// <returns>Bytes written; and, on the final message, the handshake hash and the <see cref="Transport"/> for application data.</returns>
+    /// <exception cref="InvalidOperationException">It is not this party's turn, or the handshake has completed or failed.</exception>
+    /// <exception cref="ArgumentException">The payload or buffer size is invalid; the handshake remains usable.</exception>
     public (int BytesWritten, byte[]? HandshakeHash, Transport? Transport) WriteMessage(
         ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
@@ -203,6 +209,12 @@ public sealed class HandshakeState : IDisposable
         }
     }
 
+    /// <summary>Reads the next handshake message from the peer (Noise §5.3 ReadMessage).</summary>
+    /// <param name="message">The complete message as received.</param>
+    /// <param name="payloadBuffer">Receives the decrypted payload.</param>
+    /// <returns>Payload bytes written; and, on the final message, the handshake hash and the <see cref="Transport"/>.</returns>
+    /// <exception cref="System.Security.Cryptography.CryptographicException">The message is truncated or fails authentication. The handshake is then failed and must be discarded.</exception>
+    /// <exception cref="InvalidOperationException">It is not this party's turn, or the handshake has completed or failed.</exception>
     public (int BytesRead, byte[]? HandshakeHash, Transport? Transport) ReadMessage(
         ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
@@ -416,6 +428,7 @@ public sealed class HandshakeState : IDisposable
         }
     }
 
+    /// <summary>Zeros all key material. The handshake cannot be used afterwards.</summary>
     public void Dispose()
     {
         lock (_gate)

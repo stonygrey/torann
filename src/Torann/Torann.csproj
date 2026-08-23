@@ -6,8 +6,13 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <RootNamespace>Torann</RootNamespace>
+    <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
     <PackageId>Torann</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Torann (Irish: noise) — a pure managed C# implementation of the Noise Protocol Framework. No libsodium, no native binaries; runs on iOS, Android, and everywhere else .NET does. Verified against the cacophony reference test vectors.</Description>
     <Authors>Stony Grey LLC</Authors>
     <Copyright>© 2026 Stony Grey LLC</Copyright>
@@ -18,7 +23,16 @@
     <PackageProjectUrl>https://github.com/stonygrey/torann</PackageProjectUrl>
     <RepositoryUrl>https://github.com/stonygrey/torann</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <IsAotCompatible>true</IsAotCompatible>
+    <PackageReleaseNotes>0.1.1: corrected README; SourceLink, deterministic build, and symbol package (.snupkg). No API changes.</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Label="SourceLink and reproducibility">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -12,6 +12,7 @@ namespace Torann;
 /// </summary>
 public sealed class Protocol
 {
+    /// <summary>Maximum length in bytes of a Noise handshake or transport message (Noise §3).</summary>
     public const int MaxMessageLength = 65535;
 
     private Protocol(
@@ -30,6 +31,7 @@ public sealed class Protocol
         PskPositions = pskPositions;
     }
 
+    /// <summary>The full protocol name, e.g. <c>Noise_XX_25519_ChaChaPoly_SHA256</c>.</summary>
     public string Name { get; }
 
     internal HandshakePattern Pattern { get; }
@@ -38,6 +40,11 @@ public sealed class Protocol
     internal IDhFunction Dh { get; }
     internal IReadOnlyList<int> PskPositions { get; }
 
+    /// <summary>Parses a Noise protocol name such as <c>Noise_XX_25519_ChaChaPoly_SHA256</c>.</summary>
+    /// <param name="name">The protocol name: <c>Noise_{pattern}{modifiers}_{dh}_{cipher}_{hash}</c>.</param>
+    /// <returns>A <see cref="Protocol"/> ready to create handshakes and key pairs.</returns>
+    /// <exception cref="ArgumentException">The name is not well-formed.</exception>
+    /// <exception cref="NotSupportedException">The pattern, modifier, DH, cipher, or hash is not supported by Torann.</exception>
     public static Protocol Parse(string name)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);

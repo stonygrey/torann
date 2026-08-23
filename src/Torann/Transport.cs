@@ -11,6 +11,7 @@ namespace Torann;
 /// </summary>
 public sealed class Transport : IDisposable
 {
+    /// <summary>Size in bytes of the AEAD authentication tag appended to every transport message.</summary>
     public const int TagSize = 16;
 
     private readonly object _gate = new();
@@ -105,6 +106,7 @@ public sealed class Transport : IDisposable
         }
     }
 
+    /// <summary>Disposes both cipher states and zeros their keys. Further calls throw <see cref="ObjectDisposedException"/>.</summary>
     public void Dispose()
     {
         lock (_gate)
