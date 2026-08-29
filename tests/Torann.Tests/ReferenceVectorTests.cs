@@ -9,16 +9,24 @@ using Xunit.Abstractions;
 namespace Torann.Tests;
 
 /// <summary>
-/// Runs every vector from the cacophony reference test suite whose protocol
-/// Torann supports (NN/NK/KK/XX/IK ± psk, 25519, ChaChaPoly/AESGCM, SHA256/512).
-/// Unsupported protocols (448, BLAKE2, one-way and deferred patterns) are skipped.
+/// Runs every vector from two reference suites: cacophony and snow's own
+/// suite including multi-psk vectors (mcginty/snow @ 8ac60f51cfe3,
+/// tests/vectors/snow.txt; MIT/Apache-2.0). Every one-way, fundamental, and
+/// deferred pattern across 25519/448, ChaChaPoly/AESGCM, and
+/// SHA256/512/BLAKE2s/BLAKE2b runs; only fallback vectors would be skipped
+/// (neither suite carries any).
 /// </summary>
-public class CacophonyVectorTests(ITestOutputHelper output)
+public class ReferenceVectorTests(ITestOutputHelper output)
 {
     [Fact]
-    public void AllSupportedVectorsPass()
+    public void CacophonyVectorsPass() => RunFile("cacophony.txt", minimumRun: 944);
+
+    [Fact]
+    public void SnowVectorsPass() => RunFile("snow.txt", minimumRun: 408);
+
+    private void RunFile(string fileName, int minimumRun)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Vectors", "cacophony.txt");
+        var path = Path.Combine(AppContext.BaseDirectory, "Vectors", fileName);
         var file = JsonSerializer.Deserialize<VectorFile>(File.ReadAllText(path))!;
         int run = 0, skipped = 0;
 
@@ -47,8 +55,8 @@ public class CacophonyVectorTests(ITestOutputHelper output)
             run++;
         }
 
-        output.WriteLine($"Ran {run} vectors, skipped {skipped} unsupported.");
-        Assert.True(run >= 40, $"Expected at least 40 supported vectors, ran {run}.");
+        output.WriteLine($"{fileName}: ran {run} vectors, skipped {skipped} unsupported.");
+        Assert.True(run >= minimumRun, $"{fileName}: expected at least {minimumRun} supported vectors, ran {run}.");
     }
 
     private static void RunVector(Protocol protocol, Vector vector)
@@ -75,13 +83,14 @@ public class CacophonyVectorTests(ITestOutputHelper output)
         Transport? initTransport = null, respTransport = null;
         var messageBuffer = new byte[Protocol.MaxMessageLength + 64];
         var payloadBuffer = new byte[Protocol.MaxMessageLength];
+        var oneWay = protocol.Pattern.Messages.Length == 1;
 
         for (var i = 0; i < vector.Messages.Count; i++)
         {
             var message = vector.Messages[i];
             var payload = Hex(message.Payload)!;
             var expected = Hex(message.Ciphertext)!;
-            var initiatorSends = i % 2 == 0;
+            var initiatorSends = oneWay || i % 2 == 0;
 
             if (initTransport == null)
             {

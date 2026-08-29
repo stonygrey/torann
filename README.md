@@ -9,26 +9,35 @@ targets `net9.0` and runs on iOS and Android.
 
 The name is Irish for noise (and thunder).
 
-This code is not production ready. It has not been independently audited. Development used Fable 5 and Grok 4.6.
+This code is not production ready. It has not been independently audited.
+
+The impetus for Torann came from [BlueConnect](https://github.com/stonygrey/BlueConnect) and beyond the included test vectors, that is the extent to which Torann has been tested.
 
 ## What it implements
 
-Handshake patterns: `NN`, `NK`, `KK`, `XX`, `IK`, with `psk0`–`pskN`
-modifiers. Other patterns (`N`, `X`, `K`, deferred variants, `448`)
-are rejected by `Protocol.Parse`.
+Every handshake pattern the Noise specification defines: the one-way
+patterns (`N`, `K`, `X`), the twelve fundamental interactive patterns
+(`NN` through `IX`), and the twenty-three deferred patterns (`NK1`,
+`X1X1`, …), all with `psk0`–`pskN` modifiers. One-way patterns produce
+a one-directional `Transport`; the reverse direction throws. The
+`fallback` modifier (Noise Pipes) is the one omission — neither
+reference suite carries vectors for it.
 
-- **DH**: `25519` (X25519 via Bouncy Castle's managed implementation)
+- **DH**: `25519`, `448` (X25519/X448 via Bouncy Castle's managed
+  implementations)
 - **Ciphers**: `ChaChaPoly`, `AESGCM`. AES-GCM uses
   `System.Security.Cryptography` (OS-backed). ChaChaPoly uses the OS
   where it exists and Bouncy Castle where it does not (e.g. Android
   API &lt; 28)
-- **Hashes**: `SHA256`, `SHA512`
+- **Hashes**: `SHA256`, `SHA512`, `BLAKE2s`, `BLAKE2b` (BLAKE2 via
+  Bouncy Castle, HMAC construction per the spec)
 
-Correctness is checked against the
+Correctness is checked against the complete
 [cacophony](https://github.com/haskell-cryptography/cacophony)
-reference vectors (public domain / Unlicense). Every vector whose
-protocol Torann supports is run; the rest (448, BLAKE2, one-way and
-deferred patterns) are skipped. RFC 7748 X25519 vectors are in
+reference suite (944 vectors, public domain / Unlicense) and
+[snow](https://github.com/mcginty/snow)'s suite including its
+multi-psk vectors (408 vectors, MIT/Apache-2.0) — every vector in
+both files runs; none are skipped. RFC 7748 X25519 vectors are in
 `tests/Torann.Tests`.
 
 ## Usage

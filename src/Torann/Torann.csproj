@@ -12,7 +12,7 @@
 
   <PropertyGroup Label="Package">
     <PackageId>Torann</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Description>Torann (Irish: noise) — a pure managed C# implementation of the Noise Protocol Framework. No libsodium, no native binaries; runs on iOS, Android, and everywhere else .NET does. Verified against the cacophony reference test vectors.</Description>
     <Authors>Stony Grey LLC</Authors>
     <Copyright>© 2026 Stony Grey LLC</Copyright>
@@ -23,7 +23,7 @@
     <PackageProjectUrl>https://github.com/stonygrey/torann</PackageProjectUrl>
     <RepositoryUrl>https://github.com/stonygrey/torann</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>0.1.1: corrected README; SourceLink, deterministic build, and symbol package (.snupkg). No API changes.</PackageReleaseNotes>
+    <PackageReleaseNotes>0.2.0: every Noise handshake pattern (one-way, fundamental, deferred) with psk modifiers; Curve448; BLAKE2s/BLAKE2b; one-directional Transport for one-way patterns. The full cacophony and snow vector suites (1,352 vectors) now run with none skipped.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="SourceLink and reproducibility">

@@ -19,6 +19,7 @@ public sealed class HandshakeState : IDisposable
     private readonly SymmetricState _symmetric;
     private readonly IDhFunction _dh;
     private readonly bool _initiator;
+    private readonly bool _oneWay;
     private readonly bool _hasPsk;
     private readonly Queue<Token[]> _messagePatterns;
     private readonly Queue<byte[]> _psks;
@@ -47,6 +48,7 @@ public sealed class HandshakeState : IDisposable
     {
         _dh = protocol.Dh;
         _initiator = initiator;
+        _oneWay = protocol.Pattern.Messages.Length == 1;
         _turnToWrite = initiator;
         _hasPsk = protocol.PskPositions.Count > 0;
 
@@ -308,7 +310,7 @@ public sealed class HandshakeState : IDisposable
         var handshakeHash = _symmetric.GetHandshakeHash();
         var (c1, c2) = _symmetric.Split();
         ClearHandshakeSecrets();
-        return (size, handshakeHash, new Transport(_initiator, c1, c2));
+        return (size, handshakeHash, new Transport(_initiator, c1, c2, _oneWay));
     }
 
     private void ClearHandshakeSecrets()

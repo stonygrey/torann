@@ -227,4 +227,35 @@ public class SecurityTests
         var (_, _, initTransport) = initiator.ReadMessage(message.AsSpan(0, w2), payload);
         return (initTransport!, respTransport!);
     }
+
+    [Fact]
+    public void OneWayTransportRejectsTheReverseDirection()
+    {
+        var protocol = Protocol.Parse("Noise_N_25519_AESGCM_SHA256");
+        using var respStatic = protocol.GenerateKeyPair();
+
+        using var initiator = protocol.CreateHandshake(
+            initiator: true, remoteStatic: respStatic.PublicKey);
+        using var responder = protocol.CreateHandshake(
+            initiator: false, s: respStatic);
+
+        var message = new byte[256];
+        var payload = new byte[256];
+        var (written, _, initTransport) = initiator.WriteMessage([], message);
+        var (_, _, respTransport) = responder.ReadMessage(message.AsSpan(0, written), payload);
+
+        Assert.NotNull(initTransport);
+        Assert.NotNull(respTransport);
+
+        // Initiator-to-responder works; the reverse direction must throw.
+        var length = initTransport!.WriteMessage("one way"u8, message);
+        Assert.Equal(7, respTransport!.ReadMessage(message.AsSpan(0, length), payload));
+
+        Assert.Throws<InvalidOperationException>(() => respTransport.WriteMessage("nope"u8, message));
+        Assert.Throws<InvalidOperationException>(() => initTransport.ReadMessage(message.AsSpan(0, length), payload));
+
+        initTransport.Dispose();
+        respTransport.Dispose();
+    }
+
 }

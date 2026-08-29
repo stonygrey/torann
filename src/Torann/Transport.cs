@@ -15,15 +15,32 @@ public sealed class Transport : IDisposable
     public const int TagSize = 16;
 
     private readonly object _gate = new();
-    private readonly CipherState _send;
-    private readonly CipherState _receive;
+    private readonly CipherState? _send;
+    private readonly CipherState? _receive;
     private bool _disposed;
 
-    internal Transport(bool initiator, CipherState c1, CipherState c2)
+    internal Transport(bool initiator, CipherState c1, CipherState c2, bool oneWay = false)
     {
-        _send = initiator ? c1 : c2;
-        _receive = initiator ? c2 : c1;
+        if (oneWay)
+        {
+            // One-way patterns (Noise §7.4) use only the first CipherState;
+            // traffic flows initiator-to-responder only.
+            _send = initiator ? c1 : null;
+            _receive = initiator ? null : c1;
+            c2.Dispose();
+        }
+        else
+        {
+            _send = initiator ? c1 : c2;
+            _receive = initiator ? c2 : c1;
+        }
     }
+
+    private CipherState Send => _send
+        ?? throw new InvalidOperationException("A one-way pattern's responder cannot send transport messages.");
+
+    private CipherState Receive => _receive
+        ?? throw new InvalidOperationException("A one-way pattern's initiator cannot receive transport messages.");
 
     /// <summary>Encrypts payload into messageBuffer. Returns bytes written (payload length + 16).</summary>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
@@ -41,7 +58,7 @@ public sealed class Transport : IDisposable
                 throw new ArgumentException("The message buffer is too small for the ciphertext.", nameof(messageBuffer));
             }
 
-            return _send.EncryptWithAd(default, payload, messageBuffer);
+            return Send.EncryptWithAd(default, payload, messageBuffer);
         }
     }
 
@@ -62,7 +79,7 @@ public sealed class Transport : IDisposable
                 throw new ArgumentException("The payload buffer is too small for the plaintext.", nameof(payloadBuffer));
             }
 
-            return _receive.DecryptWithAd(default, message, payloadBuffer);
+            return Receive.DecryptWithAd(default, message, payloadBuffer);
         }
     }
 
@@ -72,7 +89,7 @@ public sealed class Transport : IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _send.Rekey();
+            Send.Rekey();
         }
     }
 
@@ -82,7 +99,7 @@ public sealed class Transport : IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _receive.Rekey();
+            Receive.Rekey();
         }
     }
 
@@ -92,7 +109,7 @@ public sealed class Transport : IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _send.SetNonce(nonce);
+            Send.SetNonce(nonce);
         }
     }
 
@@ -102,7 +119,7 @@ public sealed class Transport : IDisposable
         lock (_gate)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            _receive.SetNonce(nonce);
+            Receive.SetNonce(nonce);
         }
     }
 
@@ -117,8 +134,8 @@ public sealed class Transport : IDisposable
             }
 
             _disposed = true;
-            _send.Dispose();
-            _receive.Dispose();
+            _send?.Dispose();
+            _receive?.Dispose();
         }
     }
 }

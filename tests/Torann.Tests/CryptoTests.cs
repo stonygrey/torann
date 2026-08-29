@@ -10,17 +10,33 @@ namespace Torann.Tests;
 public class CryptoTests
 {
     [Fact]
-    public void X25519MatchesRfc7748Vector()
+    public void RekeyMatchesTheSpecDefinition()
     {
-        var scalar = Convert.FromHexString("a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4");
-        var point = Convert.FromHexString("e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c");
-        var expected = "c3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552";
+        // No reference suite carries rekey vectors, so CipherState.Rekey is
+        // otherwise only self-consistent. This encodes the spec's definition
+        // directly — REKEY(k) = ENCRYPT(k, 2^64-1, empty, zeros[32])[..32],
+        // nonce preserved — so a deviation shared by both sides cannot hide.
+        foreach (ICipherFunction cipher in new ICipherFunction[] { new AesGcmCipher(), new ChaChaPolyCipher() })
+        {
+            var key = RandomNumberGenerator.GetBytes(32);
 
-        var dh = new Curve25519Dh();
-        var shared = new byte[32];
-        dh.Dh(scalar, point, shared);
+            using var direct = cipher.CreateKey(key);
+            var rekeyed = new byte[48];
+            direct.Encrypt(ulong.MaxValue, default, new byte[32], rekeyed);
 
-        Assert.Equal(expected, Convert.ToHexStringLower(shared));
+            using var expectedKey = cipher.CreateKey(rekeyed.AsSpan(0, 32).ToArray());
+            var expected = new byte[10 + 16];
+            expectedKey.Encrypt(5, default, "handshake!"u8, expected);
+
+            using var state = new CipherState(cipher);
+            state.InitializeKey(key);
+            state.SetNonce(5);
+            state.Rekey();
+            var actual = new byte[10 + 16];
+            state.EncryptWithAd(default, "handshake!"u8, actual);
+
+            Assert.Equal(expected, actual);
+        }
     }
 
     [Fact]

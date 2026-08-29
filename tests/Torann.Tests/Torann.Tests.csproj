@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="Vectors\cacophony.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Vectors\*.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

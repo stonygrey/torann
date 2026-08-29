@@ -7,8 +7,9 @@ namespace Torann;
 
 /// <summary>
 /// A parsed Noise protocol, e.g. <c>Noise_XX_25519_ChaChaPoly_SHA256</c>.
-/// Supported: patterns NN, NK, KK, XX, IK (with psk modifiers); DH 25519;
-/// ciphers ChaChaPoly and AESGCM; hashes SHA256 and SHA512.
+/// Supported: every one-way, fundamental, and deferred handshake pattern
+/// from the Noise specification (with psk modifiers); DH 25519 and 448;
+/// ciphers ChaChaPoly and AESGCM; hashes SHA256, SHA512, BLAKE2s, BLAKE2b.
 /// </summary>
 public sealed class Protocol
 {
@@ -54,9 +55,13 @@ public sealed class Protocol
             throw new ArgumentException($"'{name}' is not a valid Noise protocol name.", nameof(name));
         }
 
+        // Pattern names are uppercase letters plus the deferred-pattern "1"
+        // digits (NK1, X1X1); modifiers (psk0, ...) start with a lowercase
+        // letter.
         var patternPart = parts[1];
         var split = 0;
-        while (split < patternPart.Length && char.IsAsciiLetterUpper(patternPart[split]))
+        while (split < patternPart.Length &&
+               (char.IsAsciiLetterUpper(patternPart[split]) || char.IsAsciiDigit(patternPart[split])))
         {
             split++;
         }
@@ -88,6 +93,7 @@ public sealed class Protocol
         IDhFunction dh = parts[2] switch
         {
             "25519" => new Curve25519Dh(),
+            "448" => new Curve448Dh(),
             _ => throw new NotSupportedException($"DH function '{parts[2]}' is not supported."),
         };
 
@@ -102,6 +108,8 @@ public sealed class Protocol
         {
             "SHA256" => ShaHash.Sha256,
             "SHA512" => ShaHash.Sha512,
+            "BLAKE2s" => Blake2Hash.Blake2s,
+            "BLAKE2b" => Blake2Hash.Blake2b,
             _ => throw new NotSupportedException($"Hash function '{parts[4]}' is not supported."),
         };
 
@@ -136,8 +144,8 @@ public sealed class Protocol
 
     /// <param name="initiator">True for the party that sends the first handshake message.</param>
     /// <param name="prologue">Optional data both parties must agree on (authenticated, not transmitted).</param>
-    /// <param name="s">Local static key pair, required for XX/IK/KK and for the NK responder.</param>
-    /// <param name="remoteStatic">Remote static public key, required when the pattern has a pre-message <c>s</c> (NK, KK, IK).</param>
+    /// <param name="s">Local static key pair, required when the pattern sends or pre-shares this party's static.</param>
+    /// <param name="remoteStatic">Remote static public key, required when the pattern pre-shares the peer's static.</param>
     /// <param name="psks">32-byte pre-shared keys, one per psk modifier, in handshake processing order.</param>
     public HandshakeState CreateHandshake(
         bool initiator,
