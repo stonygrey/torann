@@ -13,7 +13,7 @@ A driver is a small program, one per implementation, that reads commands from st
 | Implementation | Source | Built by | Launched as |
 |---|---|---|---|
 | C# | `dotnet/interop/Torann.Interop/` | `dotnet build dotnet/interop/Torann.Interop -c Release` | `dotnet dotnet/interop/Torann.Interop/bin/Release/net9.0/Torann.Interop.dll` |
-| Swift | `swift/Sources/TorannInterop/`, an executable target in `Package.swift` | `swift build -c release --target TorannInterop` | `.build/release/TorannInterop` |
+| Swift | `swift/Sources/TorannInterop/`, an executable target in `Package.swift` | `swift build -c release --product TorannInterop` | `.build/release/TorannInterop` |
 | Kotlin | `kotlin/interop-driver/` | `cd kotlin && ./gradlew :interop-driver:installDist` | `kotlin/interop-driver/build/install/interop-driver/bin/interop-driver` |
 
 `run.py` runs the three build commands first. The Kotlin build and driver need `JAVA_HOME` to point at a JDK 17 or later.

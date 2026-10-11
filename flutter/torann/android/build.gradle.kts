@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 group = "com.stonygrey.torann"
-version = "0.3.0"
+version = "0.3.1"
 
 buildscript {
     val kotlinVersion = "2.4.20"
@@ -58,5 +58,5 @@ kotlin {
 
 dependencies {
     // Resolved from Maven Central; the example app adds mavenLocal() for development.
-    implementation("com.stonygrey:torann:0.3.0")
+    implementation("com.stonygrey:torann:0.3.1")
 }

@@ -1,4 +1,4 @@
-## 0.3.0
+## 0.3.1
 
 * First release of the Flutter plugin. Dart API over the Swift implementation on iOS
   (CryptoKit, 25519, ChaChaPoly, AESGCM, SHA256, SHA512) and the Kotlin implementation

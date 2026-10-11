@@ -1,6 +1,6 @@
 {
   "name": "@stonygrey/torann",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The Noise Protocol Framework for React Native: native Swift (CryptoKit) and Kotlin (JCA and Bouncy Castle) implementations behind one TypeScript API.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -31,7 +31,11 @@
     "cryptography",
     "torann"
   ],
-  "repository": "https://github.com/stonygrey/torann",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stonygrey/torann.git",
+    "directory": "reactnative/torann"
+  },
   "bugs": {
     "url": "https://github.com/stonygrey/torann/issues"
   },

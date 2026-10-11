@@ -20,7 +20,9 @@ DRIVERS = {
         "full": True,
     },
     "swift": {
-        "build": ["swift", "build", "-c", "release", "--target", "TorannInterop"],
+        # --product, not --target: SwiftPM in Xcode 16 compiles a target named with
+        # --target without linking its executable, and the build then reports success.
+        "build": ["swift", "build", "-c", "release", "--product", "TorannInterop"],
         "run": [".build/release/TorannInterop"],
         "full": False,
     },

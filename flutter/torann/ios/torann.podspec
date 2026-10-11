@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'torann'
-  s.version          = '0.3.0'
+  s.version          = '0.3.1'
   s.summary          = 'The Noise Protocol Framework for Flutter (Swift and Kotlin implementations).'
   s.description      = <<-DESC
 Torann implements the Noise Protocol Framework (revision 34). On iOS the plugin

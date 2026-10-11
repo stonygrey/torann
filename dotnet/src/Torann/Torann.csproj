@@ -12,7 +12,7 @@
 
   <PropertyGroup Label="Package">
     <PackageId>Torann</PackageId>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Description>Torann (Irish: noise) — a pure managed C# implementation of the Noise Protocol Framework. No libsodium, no native binaries; runs on iOS, Android, and everywhere else .NET does. Verified against the cacophony reference test vectors.</Description>
     <Authors>Stony Grey LLC</Authors>
     <Copyright>© 2026 Stony Grey LLC</Copyright>
@@ -23,7 +23,7 @@
     <PackageProjectUrl>https://github.com/stonygrey/torann</PackageProjectUrl>
     <RepositoryUrl>https://github.com/stonygrey/torann</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>0.3.0: breaking: Protocol is renamed NoiseProtocol, the name used by the Swift, Kotlin, Flutter, and React Native packages released from the same repository tag. KeyPair.PublicKey returns a copy on every read. A low-order peer public key (all-zero DH output) now throws CryptographicException and ends the handshake. A tag mismatch throws AuthenticationTagMismatchException with the fixed message "The authentication tag did not match."; psk modifier digits must be ASCII digits without a sign; an empty protocol name reports "'' is not a valid Noise protocol name." The NuGet README is the C# package README under dotnet/. 0.2.0: every Noise handshake pattern (one-way, fundamental, deferred) with psk modifiers; Curve448; BLAKE2s/BLAKE2b; one-directional Transport for one-way patterns; the full cacophony and snow vector suites (1,352 vectors) run with none skipped.</PackageReleaseNotes>
+    <PackageReleaseNotes>0.3.1: the first published release of the 0.3 line; 0.3.0 was tagged but not published, and the library is unchanged since that tag. 0.3.0: breaking: Protocol is renamed NoiseProtocol, the name used by the Swift, Kotlin, Flutter, and React Native packages released from the same repository tag. KeyPair.PublicKey returns a copy on every read. A low-order peer public key (all-zero DH output) now throws CryptographicException and ends the handshake. A tag mismatch throws AuthenticationTagMismatchException with the fixed message "The authentication tag did not match."; psk modifier digits must be ASCII digits without a sign; an empty protocol name reports "'' is not a valid Noise protocol name." The NuGet README is the C# package README under dotnet/. 0.2.0: every Noise handshake pattern (one-way, fundamental, deferred) with psk modifiers; Curve448; BLAKE2s/BLAKE2b; one-directional Transport for one-way patterns; the full cacophony and snow vector suites (1,352 vectors) run with none skipped.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Label="SourceLink and reproducibility">

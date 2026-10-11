@@ -13,7 +13,7 @@ The Diffie-Hellman function is `25519`, the ciphers are `ChaChaPoly` and `AESGCM
 Add the package by its repository URL. SwiftPM reads the version from the repository's git tags, which every Torann package shares.
 
 ```swift
-.package(url: "https://github.com/stonygrey/torann.git", from: "0.3.0")
+.package(url: "https://github.com/stonygrey/torann.git", from: "0.3.1")
 // and in the target:
 .product(name: "Torann", package: "torann")
 ```

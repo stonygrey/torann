@@ -4,7 +4,6 @@
 #
 # Checks that every package manifest carries the same version, and that it equals the
 # given version when one is passed; the release workflow passes the tag's version.
-# lib/set-versions writes the same fields.
 #
 # Usage: lib/check-versions [version]      e.g. lib/check-versions 0.3.0
 set -euo pipefail

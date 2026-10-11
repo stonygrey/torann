@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "com.stonygrey"
-version = "0.3.0"
+version = "0.3.1"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -27,7 +27,7 @@ mavenPublishing {
     publishToMavenCentral()
     // Signing is conditional so that local builds and publishToMavenLocal work without a
     // key. Maven Central rejects an unsigned upload.
-    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
+    if (!providers.gradleProperty("signingInMemoryKey").orNull.isNullOrBlank()) {
         signAllPublications()
     }
     coordinates("com.stonygrey", "torann", version.toString())

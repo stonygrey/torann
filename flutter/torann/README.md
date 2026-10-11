@@ -12,7 +12,7 @@ The functions the plugin supports are the functions its host supports: the Kotli
 
 ```yaml
 dependencies:
-  torann: ^0.3.0
+  torann: ^0.3.1
 ```
 
 The application's iOS deployment target must be 18.0 or later and its Android `minSdk` 33 or later. On Android the plugin depends on `com.stonygrey:torann` from Maven Central.

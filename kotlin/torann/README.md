@@ -11,7 +11,7 @@ The Diffie-Hellman functions are `25519` and `448`, the ciphers are `ChaChaPoly`
 ## Installation
 
 ```kotlin
-implementation("com.stonygrey:torann:0.3.0")
+implementation("com.stonygrey:torann:0.3.1")
 ```
 
 The artifact is published to Maven Central through the Central Portal by `.github/workflows/release.yml`. During development, `./gradlew :torann:publishToMavenLocal` puts the same artifact in `~/.m2`, and that is where the Flutter and React Native example apps resolve it.

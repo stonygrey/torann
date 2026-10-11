@@ -4,7 +4,7 @@
 # The sources under Torann/ are copies written by lib/sync-reactnative-sources.
 Pod::Spec.new do |s|
   s.name           = 'Torann'
-  s.version        = '0.3.0'
+  s.version        = '0.3.1'
   s.summary        = 'The Noise Protocol Framework for React Native (Swift and Kotlin implementations).'
   s.description    = 'Torann implements the Noise Protocol Framework (revision 34). On iOS this pod compiles the Swift implementation, built on CryptoKit.'
   s.author         = { 'Stony Grey LLC' => 'hello@stonygrey.com' }
