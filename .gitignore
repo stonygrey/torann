@@ -484,3 +484,14 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Swift
+.build/
+.swiftpm/
+*.xcresult
+
+# Kotlin and Gradle
+kotlin/.gradle/
+kotlin/**/build/
+kotlin/local.properties
+kotlin/.kotlin/

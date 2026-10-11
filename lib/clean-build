@@ -1,0 +1,145 @@
+#!/bin/bash
+# Copyright © 2026 Stony Grey LLC.
+# SPDX-License-Identifier: MIT
+#
+# Cleans the build output of every package under the repo (or a given folder
+# inside it), then restores the .NET packages. What is deleted:
+#
+#   .NET          every 'bin' and 'obj' folder under dotnet, and dotnet/artifacts,
+#                 the output of dotnet/lib/pack-nuget
+#   Swift         the SwiftPM '.build' and '.swiftpm' folders at the repo root,
+#                 and any '*.xcresult' bundle
+#   Kotlin        under kotlin: every 'build' folder, '.gradle', '.kotlin'
+#   Flutter       under flutter: 'build', '.dart_tool', '.gradle', '.kotlin',
+#                 '.cxx', 'ephemeral', 'Pods', and '.symlinks' folders, the
+#                 example's .flutter-plugins-dependencies, and the files the
+#                 flutter tool writes into the example's native projects
+#                 (Generated.xcconfig, flutter_export_environment.sh,
+#                 GeneratedPluginRegistrant.*)
+#   React Native  under reactnative: 'build' folders (the package's compiled
+#                 TypeScript and the Android library output), '.expo',
+#                 '.gradle', and '.kotlin' folders, the example's 'ios' and
+#                 'android' folders that `expo prebuild` generates, and any
+#                 '*.tgz' from `npm pack`; node_modules is kept, because it is
+#                 the installed package set, as ~/.nuget is for .NET, not
+#                 build output
+#   Python        every '__pycache__' folder (interop/run.py)
+#
+# The folders are the ones the .gitignore files list as build output for each
+# package. Local configuration is kept: local.properties, pubspec.lock,
+# package-lock.json, Package.resolved. IDE state (.idea, *.iml, .vs without
+# --hard) is kept. Only the .NET packages are restored: `swift build`, Gradle,
+# and the flutter tool resolve their dependencies on the next build,
+# `npm run build` in reactnative/torann regenerates the package's 'build'
+# folder, which the example app imports, and `expo prebuild` regenerates the
+# example's native folders.
+#
+# Usage: lib/clean-build [folder] [--hard] [-n] [-q|-y]
+#   --hard   also clears all local NuGet caches and deletes the .vs folder
+#   -n       list what would be deleted, delete nothing, skip the restore
+#   -q, -y   skip the confirmation prompt
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+FOLDER="$REPO"
+HARD=0
+QUIET=0
+DRY_RUN=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --hard) HARD=1 ;;
+    -n|--dry-run) DRY_RUN=1 ;;
+    -q|-y|--quiet) QUIET=1 ;;
+    -*) echo "Unknown option: $arg" >&2; exit 1 ;;
+    *) FOLDER="$arg" ;;
+  esac
+done
+
+if [[ ! -d "$FOLDER" ]]; then
+  echo "$FOLDER does not exist!" >&2
+  exit 1
+fi
+FOLDER="$(cd "$FOLDER" && pwd)"
+case "$FOLDER" in
+  "$REPO"|"$REPO"/*) ;;
+  *) echo "$FOLDER is not inside the repo ($REPO)" >&2; exit 1 ;;
+esac
+
+if [[ $QUIET -eq 0 && $DRY_RUN -eq 0 ]]; then
+  read -r -p "Are you sure you want to delete every build output ('bin', 'obj', and the Swift, Kotlin, Flutter, and React Native build trees) in '$FOLDER'? (y/n) " confirmation
+  if [[ "$confirmation" != "y" ]]; then
+    echo "Operation cancelled."
+    exit 2
+  fi
+fi
+
+# remove <path>: deletes a folder or file that exists, or lists it with -n.
+remove() {
+  local path="$1" kind
+  [[ -e "$path" ]] || return 0
+  if [[ -d "$path" ]]; then kind="folder"; else kind="file"; fi
+  if [[ $DRY_RUN -eq 1 ]]; then
+    echo "Would delete $kind: $path"
+  else
+    rm -rf "$path"
+    echo "Deleted $kind: $path"
+  fi
+}
+
+# inside <path>: true when the path is under the folder being cleaned.
+inside() {
+  case "$1" in "$FOLDER"|"$FOLDER"/*) return 0 ;; esac
+  return 1
+}
+
+# One pass over the folder: the build folders of each package, matched by name
+# within that package's tree. Each match is pruned, so nothing inside a deleted
+# folder is visited, and node_modules is never entered.
+find "$FOLDER" \( -name .git -o -name node_modules \) -prune -o \( \
+    \( -type d -path "$REPO/dotnet/*" \( -name bin -o -name obj \) \) -o \
+    \( -type d -path "$REPO/kotlin/*" \( -name build -o -name .gradle -o -name .kotlin \) \) -o \
+    \( -type d -path "$REPO/flutter/*" \( -name build -o -name .dart_tool -o -name .gradle -o -name .kotlin \
+        -o -name .cxx -o -name ephemeral -o -name Pods -o -name .symlinks \) \) -o \
+    \( -type d -path "$REPO/reactnative/*" \( -name build -o -name .expo -o -name .gradle -o -name .kotlin \) \) -o \
+    \( -type d -name '*.xcresult' \) -o \
+    \( -type d -name __pycache__ \) \
+  \) -prune -print0 | while IFS= read -r -d '' dir; do
+  remove "$dir"
+done
+
+# Generated folders and files that are not matched by name above.
+for path in \
+    "$REPO"/.build \
+    "$REPO"/.swiftpm \
+    "$REPO"/dotnet/artifacts \
+    "$REPO"/flutter/torann/example/.flutter-plugins-dependencies \
+    "$REPO"/flutter/torann/example/ios/Flutter/Generated.xcconfig \
+    "$REPO"/flutter/torann/example/ios/Flutter/flutter_export_environment.sh \
+    "$REPO"/flutter/torann/example/ios/Runner/GeneratedPluginRegistrant.h \
+    "$REPO"/flutter/torann/example/ios/Runner/GeneratedPluginRegistrant.m \
+    "$REPO"/flutter/torann/example/android/app/src/main/java \
+    "$REPO"/reactnative/torann/example/ios \
+    "$REPO"/reactnative/torann/example/android \
+    "$REPO"/reactnative/torann/*.tgz; do
+  inside "$path" && remove "$path"
+done
+
+if [[ $DRY_RUN -eq 1 ]]; then
+  echo "Dry run: nothing deleted, packages not restored."
+  exit 0
+fi
+
+if [[ $HARD -eq 1 ]]; then
+  dotnet nuget locals all --clear
+  remove "$FOLDER/.vs"
+fi
+
+echo "Restoring packages..."
+if ! dotnet restore "$REPO/dotnet/Torann.slnx"; then
+  echo "Restore failed" >&2
+  exit 3
+fi
+
+echo "Operation completed."

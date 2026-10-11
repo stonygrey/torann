@@ -1,0 +1,28 @@
+name: torann
+description: "The Noise Protocol Framework for Flutter: native Swift (CryptoKit) and Kotlin (JCA and Bouncy Castle) implementations behind one Dart API."
+version: 0.3.0
+homepage: https://github.com/stonygrey/torann
+repository: https://github.com/stonygrey/torann
+
+environment:
+  sdk: ^3.13.5
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.19.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  pigeon: 29.0.6
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.stonygrey.torann
+        pluginClass: TorannPlugin
+      ios:
+        pluginClass: TorannPlugin

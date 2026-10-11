@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Torann/Torann.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Torann.Tests/Torann.Tests.csproj" />
+  </Folder>
+  <Folder Name="/interop/">
+    <Project Path="interop/Torann.Interop/Torann.Interop.csproj" />
+  </Folder>
+</Solution>

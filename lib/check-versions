@@ -1,0 +1,42 @@
+#!/bin/bash
+# Copyright © 2026 Stony Grey LLC.
+# SPDX-License-Identifier: MIT
+#
+# Checks that every package manifest carries the same version, and that it equals the
+# given version when one is passed; the release workflow passes the tag's version.
+# lib/set-versions writes the same fields.
+#
+# Usage: lib/check-versions [version]      e.g. lib/check-versions 0.3.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+declare -a names values
+add() { names+=("$1"); values+=("$2"); }
+
+add "dotnet/src/Torann/Torann.csproj <Version>"             "$(sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' "$ROOT/dotnet/src/Torann/Torann.csproj")"
+add "kotlin/torann/build.gradle.kts version"                 "$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/kotlin/torann/build.gradle.kts")"
+add "flutter/torann/pubspec.yaml version"                    "$(sed -n 's/^version: \(.*\)/\1/p' "$ROOT/flutter/torann/pubspec.yaml")"
+add "flutter/torann/ios/torann.podspec s.version"            "$(sed -n "s/.*s.version *= *'\(.*\)'.*/\1/p" "$ROOT/flutter/torann/ios/torann.podspec")"
+add "flutter/torann/android/build.gradle.kts version"        "$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/flutter/torann/android/build.gradle.kts")"
+add "flutter/torann/android dependency com.stonygrey:torann" "$(sed -n 's/.*com.stonygrey:torann:\([0-9A-Za-z.-]*\).*/\1/p' "$ROOT/flutter/torann/android/build.gradle.kts")"
+add "flutter/torann/CHANGELOG.md first heading"              "$(sed -n 's/^## \(.*\)/\1/p' "$ROOT/flutter/torann/CHANGELOG.md" | head -1)"
+add "reactnative/torann/package.json version"                "$(sed -n 's/^  "version": "\(.*\)",/\1/p' "$ROOT/reactnative/torann/package.json" | head -1)"
+add "reactnative/torann/ios/Torann.podspec s.version"        "$(sed -n "s/.*s.version *= *'\(.*\)'.*/\1/p" "$ROOT/reactnative/torann/ios/Torann.podspec")"
+add "reactnative/torann/android/build.gradle version"        "$(sed -n "s/^version = '\(.*\)'/\1/p" "$ROOT/reactnative/torann/android/build.gradle")"
+add "reactnative/torann/android/build.gradle versionName"    "$(sed -n 's/^ *versionName "\(.*\)"/\1/p' "$ROOT/reactnative/torann/android/build.gradle")"
+add "reactnative/torann/android dependency com.stonygrey:torann" "$(sed -n 's/.*com.stonygrey:torann:\([0-9A-Za-z.-]*\).*/\1/p' "$ROOT/reactnative/torann/android/build.gradle")"
+add "reactnative/torann/CHANGELOG.md first heading"          "$(sed -n 's/^## \(.*\)/\1/p' "$ROOT/reactnative/torann/CHANGELOG.md" | head -1)"
+
+expected="${1:-${values[0]}}"
+expected="${expected#v}"
+status=0
+for i in "${!names[@]}"; do
+  if [[ "${values[$i]}" == "$expected" ]]; then
+    printf '  ok       %-62s %s\n' "${names[$i]}" "${values[$i]}"
+  else
+    printf '  MISMATCH %-62s %s (expected %s)\n' "${names[$i]}" "${values[$i]:-<none>}" "$expected"
+    status=1
+  fi
+done
+[[ $status -eq 0 ]] && echo "all packages are at version $expected"
+exit $status

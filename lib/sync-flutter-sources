@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright © 2026 Stony Grey LLC.
+# SPDX-License-Identifier: MIT
+#
+# Copies the Swift library sources and the shared vectors into the Flutter plugin,
+# which cannot reference files outside its own folder. With --check the script compares
+# instead of copying and exits 1 when any copy differs.
+#
+# Usage: lib/sync-flutter-sources [--check]
+#   swift/Sources/Torann/**/*.swift -> flutter/torann/ios/torann/Sources/torann/Torann/
+#   vectors/*.txt                   -> flutter/torann/example/assets/vectors/
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CHECK=0
+[[ "${1:-}" == "--check" ]] && CHECK=1
+
+status=0
+sync_tree() {
+  local src="$1" dst="$2" pattern="$3"
+  if [[ $CHECK -eq 1 ]]; then
+    while IFS= read -r -d '' f; do
+      rel="${f#"$src"/}"
+      if ! cmp -s "$f" "$dst/$rel"; then echo "differs or missing: $dst/$rel"; status=1; fi
+    done < <(find "$src" -type f -name "$pattern" -print0)
+    if [[ -d "$dst" ]]; then
+      while IFS= read -r -d '' f; do
+        rel="${f#"$dst"/}"
+        if [[ ! -f "$src/$rel" ]]; then echo "extra file in copy: $dst/$rel"; status=1; fi
+      done < <(find "$dst" -type f -print0)
+    fi
+  else
+    rm -rf "$dst"
+    mkdir -p "$dst"
+    while IFS= read -r -d '' f; do
+      rel="${f#"$src"/}"
+      mkdir -p "$dst/$(dirname "$rel")"
+      cp "$f" "$dst/$rel"
+    done < <(find "$src" -type f -name "$pattern" -print0)
+  fi
+}
+
+sync_tree "$ROOT/swift/Sources/Torann" "$ROOT/flutter/torann/ios/torann/Sources/torann/Torann" "*.swift"
+sync_tree "$ROOT/vectors" "$ROOT/flutter/torann/example/assets/vectors" "*.txt"
+
+if [[ $CHECK -eq 1 ]]; then
+  [[ $status -eq 0 ]] && echo "flutter copies match their sources"
+  exit $status
+fi
+echo "synced Swift sources and vectors into flutter/torann"

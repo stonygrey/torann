@@ -1,0 +1,28 @@
+name: torann_example
+description: "Demonstrates how to use the torann plugin."
+publish_to: 'none'
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  torann:
+    path: ../
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  integration_test:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  # Copies of vectors/*.txt made by lib/sync-flutter-sources, for integration_test.
+  assets:
+    - assets/vectors/

@@ -1,0 +1,54 @@
+#!/bin/bash
+# Copyright © 2026 Stony Grey LLC.
+# SPDX-License-Identifier: MIT
+#
+# Copies the Swift library sources and the shared vectors into the React Native
+# package, which cannot reference files outside its own folder; the vectors get a .json
+# extension because Metro bundles .json and not .txt. With --check the script compares
+# instead of copying and exits 1 when any copy differs.
+#
+# Usage: lib/sync-reactnative-sources [--check]
+#   swift/Sources/Torann/**/*.swift -> reactnative/torann/ios/Torann/
+#   vectors/*.txt                   -> reactnative/torann/example/assets/vectors/*.json
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+CHECK=0
+[[ "${1:-}" == "--check" ]] && CHECK=1
+
+status=0
+sync_tree() {
+  local src="$1" dst="$2" pattern="$3" rename_to="${4:-}"
+  if [[ $CHECK -eq 1 ]]; then
+    while IFS= read -r -d '' f; do
+      rel="${f#"$src"/}"
+      [[ -n "$rename_to" ]] && rel="${rel%.*}.$rename_to"
+      if ! cmp -s "$f" "$dst/$rel"; then echo "differs or missing: $dst/$rel"; status=1; fi
+    done < <(find "$src" -type f -name "$pattern" -print0)
+    if [[ -d "$dst" ]]; then
+      while IFS= read -r -d '' f; do
+        rel="${f#"$dst"/}"
+        orig="$rel"
+        [[ -n "$rename_to" ]] && orig="${rel%.*}.txt"
+        if [[ ! -f "$src/$orig" ]]; then echo "extra file in copy: $dst/$rel"; status=1; fi
+      done < <(find "$dst" -type f -print0)
+    fi
+  else
+    rm -rf "$dst"
+    mkdir -p "$dst"
+    while IFS= read -r -d '' f; do
+      rel="${f#"$src"/}"
+      [[ -n "$rename_to" ]] && rel="${rel%.*}.$rename_to"
+      mkdir -p "$dst/$(dirname "$rel")"
+      cp "$f" "$dst/$rel"
+    done < <(find "$src" -type f -name "$pattern" -print0)
+  fi
+}
+
+sync_tree "$ROOT/swift/Sources/Torann" "$ROOT/reactnative/torann/ios/Torann" "*.swift"
+sync_tree "$ROOT/vectors" "$ROOT/reactnative/torann/example/assets/vectors" "*.txt" "json"
+
+if [[ $CHECK -eq 1 ]]; then
+  [[ $status -eq 0 ]] && echo "react native copies match their sources"
+  exit $status
+fi
+echo "synced Swift sources and vectors into reactnative/torann"

@@ -1,0 +1,29 @@
+// Copyright © 2026 Stony Grey LLC.
+// SPDX-License-Identifier: MIT
+
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'com.stonygrey.torann.reactnative'
+version = '0.3.0'
+
+android {
+  namespace "com.stonygrey.torann.reactnative"
+  defaultConfig {
+    minSdk 33
+    // The expo-autolinking Gradle plugin reads versionName from every module it links.
+    versionCode 1
+    versionName "0.3.0"
+  }
+  lintOptions {
+    abortOnError false
+  }
+}
+
+dependencies {
+  // A repositories block in this file does not reach the application's dependency
+  // resolution; the example adds mavenLocal() through a config plugin.
+  implementation 'com.stonygrey:torann:0.3.0'
+}
